@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秒表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #fff;
+            color: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            font-family: "Microsoft YaHei", 微软雅黑, sans-serif;
+            user-select: none;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <div id="time">00:00:00.000</div>
+
+    <script>
+        const timeBox = document.getElementById('time');
+        let timer = null;
+        let isRunning = false;
+        let startTime = 0;
+        let passTime = 0;
+        let lastClick = 0;
+        const doubleSpeed = 300; // 双击判定间隔(毫秒)
+
+        // 时间格式化
+        function formatTime(ms) {
+            let h = String(Math.floor(ms / 3600000)).padStart(2, '0');
+            let m = String(Math.floor(ms % 3600000 / 60000)).padStart(2, '0');
+            let s = String(Math.floor(ms % 60000 / 1000)).padStart(2, '0');
+            let mill = String(Math.floor(ms % 1000)).padStart(3, '0');
+            return `${h}:${m}:${s}.${mill}`;
+        }
+
+        // 清零功能
+        function reset() {
+            clearInterval(timer);
+            isRunning = false;
+            passTime = 0;
+            timeBox.textContent = "00:00:00.000";
+        }
+
+        // 启停切换
+        function toggleRun() {
+            if (isRunning) {
+                // 暂停
+                isRunning = false;
+                clearInterval(timer);
+                passTime += Date.now() - startTime;
+            } else {
+                // 继续/开始计时
+                isRunning = true;
+                startTime = Date.now();
+                timer = setInterval(() => {
+                    let total = passTime + (Date.now() - startTime);
+                    timeBox.textContent = formatTime(total);
+                }, 1);
+            }
+        }
+
+        // 主事件处理（区分单击/双击）
+        function handleAction() {
+            let now = Date.now();
+            if (now - lastClick < doubleSpeed) {
+                // 双击：清零
+                reset();
+            } else {
+                // 单击：启停
+                toggleRun();
+            }
+            lastClick = now;
+        }
+
+        // 绑定鼠标、键盘
+        document.addEventListener('mousedown', handleAction);
+        document.addEventListener('keydown', handleAction);
+    </script>
+</body>
+</html>
